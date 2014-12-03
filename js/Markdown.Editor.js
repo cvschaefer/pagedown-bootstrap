@@ -981,7 +981,9 @@
 
 			if (panels.preview) {
 				previewSet(text);
-				previewRefreshCallback();
+                if (!isFirstTimeFilled) {
+				    previewRefreshCallback();
+                }
 			}
 
 			setPanelScrollTops();

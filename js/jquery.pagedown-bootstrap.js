@@ -33,6 +33,7 @@
 			'hooks'						: Array(),
 			'converter_hooks'           : Array(),
 			'editor_hooks'              : Array(),
+            'converter_auto_new_line'   : false,
 			'text':   {}
 		}, options);
 		settings.converter_hooks.concat(settings.hooks);
@@ -47,6 +48,7 @@
 			} else {
 				converter = new Markdown.Converter()
 			}
+            converter.autoNewLine = settings.converter_auto_new_line;
 
 			//Register converter hooks
 			for(var i in settings.converter_hooks)
@@ -89,7 +91,6 @@
 
 			//Setup editor
 			var editor = new Markdown.Editor(converter, "-"+idAppend.toString(), help, settings.text);
-			editor.run();
 			//Register editor hooks
 			for(var i in settings.editor_hooks)
 			{
@@ -107,6 +108,7 @@
 					editor.hooks.chain(hook.event, hook.callback);
 
 			}
+            editor.run();
 
 		});
 

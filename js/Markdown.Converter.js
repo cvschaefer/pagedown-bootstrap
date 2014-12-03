@@ -104,8 +104,13 @@ else
 	Markdown.Converter = function () {
 		var pluginHooks = this.hooks = new HookCollection();
 		pluginHooks.addNoop("plainLinkText");  // given a URL that was encountered by itself (without markup), should return the link text that's to be given to this link
-		pluginHooks.addNoop("preConversion");  // called with the orignal text as given to makeHtml. The result of this plugin hook is the actual markdown source that will be cooked
+		pluginHooks.addNoop("preConversion");  // called with the original text as given to makeHtml. The result of this plugin hook is the actual markdown source that will be cooked
 		pluginHooks.addNoop("postConversion"); // called with the final cooked HTML code. The result of this plugin hook is the actual output of makeHtml
+
+        // makes converter instance available in private methods
+        var converter = this;
+        this.autoNewLine = false;  // when true, RETURN becomes a literal newline
+                                   // WARNING: this is a significant deviation from the markdown spec
 
 		//
 		// Private state of the converter instance:
@@ -432,7 +437,12 @@ else
 			text = _DoItalicsAndBold(text);
 
 			// Do hard breaks:
-			text = text.replace(/  +\n/g, " <br>\n");
+            if(converter.autoNewLine) {
+                text = text.replace(/\n/g, " <br>\n");
+            } else {
+                text = text.replace(/  +\n/g, " <br>\n");
+            }
+
 
 			return text;
 		}
