@@ -1212,7 +1212,10 @@ else
 
 			// automatically add < and > around unadorned raw hyperlinks
 			// must be preceded by space/BOF and followed by non-word/EOF character
-			text = text.replace(/(^|\s)(https?|ftp)(:\/\/[-A-Z0-9+&@#\/%?=~_|\[\]\(\)!:,\.;]*[-A-Z0-9+&@#\/%=~_|\[\]])($|\W)/gi, "$1<$2$3>$4");
+            for (var i = 0; i < 2; i++) {
+                // replace a second time to support multiple urls separated only by a single non-word/EOF character
+			    text = text.replace(/(^|\s)(https?|ftp)(:\/\/[-A-Z0-9+&@#\/%?=~_|\[\]\(\)!:,\.;]*[-A-Z0-9+&@#\/%=~_|\[\]])($|\W)/gi, "$1<$2$3>$4");
+            }
 
 			//  autolink anything like <http://example.com>
 
