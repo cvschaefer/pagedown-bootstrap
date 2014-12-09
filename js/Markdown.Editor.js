@@ -22,7 +22,6 @@
 				bold: "Bold - Ctrl+B",
 				italic: "Italic - Ctrl+I",
 				link: "Link - Ctrl+L",
-				video: "Video - Ctrl+L",
 				quote: "Blockquote - Ctrl+Q",
 				code: "Code Sample - Ctrl+K",
 				image: "Image - Ctrl+G",
@@ -50,11 +49,6 @@
 					dialog: "<code>http://example.com/images/diagram.jpg \"optional title\"</code>",
 					default: "http://"
 				},
-				video: {
-					heading: "Insert Video",
-					dialog: "<code>http://example.com/images/diagram.jpg \"optional title\"</code>",
-					default: "http://"
-				}
 			},
 			button: {
 				ok: "Ok",
@@ -1430,9 +1424,6 @@
 			buttons.link = makeButton("wmd-link-button", TEXT.icon.link, "fa fa-link", bindCommand(function (chunk, postProcessing) {
 				return this.doLinkOrImage(chunk, postProcessing, false);
 			}), group2);
-			buttons.video = makeButton("wmd-video-button", TEXT.icon.video, "fa fa-video", bindCommand(function (chunk, postProcessing) {
-				return this.doLinkOrImage(chunk, postProcessing, false, true);
-			}), group2);
 			buttons.quote = makeButton("wmd-quote-button", TEXT.icon.quote, "fa fa-quote-left", bindCommand("doBlockquote"), group2);
 			buttons.code = makeButton("wmd-code-button", TEXT.icon.code, "fa fa-code", bindCommand("doCode"), group2);
 			buttons.image = makeButton("wmd-image-button", TEXT.icon.image, "fa fa-picture-o", bindCommand(function (chunk, postProcessing) {
@@ -1670,7 +1661,7 @@
 		});
 	}
 
-	commandProto.doLinkOrImage = function (chunk, postProcessing, isImage, isVideo) {
+	commandProto.doLinkOrImage = function (chunk, postProcessing, isImage) {
 
 		chunk.trimWhitespace();
 		chunk.findTags(/\s*!?\[/, /\][ ]?(?:\n[ ]*)?(\[.*?\])?/);
@@ -1743,9 +1734,8 @@
 			if (isImage) {
 				if (!this.hooks.insertImageDialog(linkEnteredCallback))
 					ui.prompt(TEXT.modal.image.heading, TEXT.modal.image.dialog, TEXT.modal.image.default, linkEnteredCallback);
-			} else if (isVideo) {
-					ui.prompt(TEXT.modal.video.heading, TEXT.modal.video.dialog, TEXT.modal.video.default, linkEnteredCallback);
-			} else {
+			}
+            else {
 				ui.prompt(TEXT.modal.link.heading, TEXT.modal.link.dialog, TEXT.modal.link.default, linkEnteredCallback);
 			}
 			return true;
