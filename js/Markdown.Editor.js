@@ -1,7 +1,5 @@
 ﻿// needs Markdown.Converter.js at the moment
-
 (function ($) {
-
 	var util = {},
 		position = {},
 		ui = {},
@@ -32,7 +30,7 @@
 				undo: "Undo - Ctrl+Z",
 				redo: {
 					alternative: "Redo - Ctrl+Y",
-					default: "Redo - Ctrl+Shift+Z"
+					defaultText: "Redo - Ctrl+Shift+Z"
 				},
 				help: {
 					hover: "Markdown Editing Help"
@@ -42,12 +40,12 @@
 				link: {
 					heading: "Insert Link",
 					dialog: "<code>http://example.com/ \"optional title\"</code>",
-					default: "http://"
+					defaultText: "http://"
 				},
 				image: {
 					heading: "Insert Image",
 					dialog: "<code>http://example.com/images/diagram.jpg \"optional title\"</code>",
-					default: "http://"
+					defaultText: "http://"
 				}
 			},
 			button: {
@@ -60,7 +58,7 @@
 					link: "enter link description here"
 				}
 			}
-		}
+		};
 
 
 	// -------------------------------------------------------------------
@@ -146,7 +144,7 @@
 
 	// before: contains all the text in the input box BEFORE the selection.
 	// after: contains all the text in the input box AFTER the selection.
-	function Chunks() { }
+	function Chunks() { };
 
 	// startRegex: a regular expression to find the start tag
 	// endRegex: a regular expresssion to find the end tag
@@ -1445,7 +1443,7 @@
 			buttons.undo.execute = function (manager) { if (manager) manager.undo(); };
 
 			var redoTitle = /win/.test(nav.platform.toLowerCase()) ?
-				TEXT.icon.redo.default :
+				TEXT.icon.redo.defaultText :
 				TEXT.icon.redo.alternative; // mac and other non-Windows platforms
 
 			buttons.redo = makeButton("wmd-redo-button", redoTitle, "fa fa-rotate-right", null, group4);
@@ -1733,10 +1731,10 @@
 
 			if (isImage) {
 				if (!this.hooks.insertImageDialog(linkEnteredCallback))
-					ui.prompt(TEXT.modal.image.heading, TEXT.modal.image.dialog, TEXT.modal.image.default, linkEnteredCallback);
+					ui.prompt(TEXT.modal.image.heading, TEXT.modal.image.dialog, TEXT.modal.image.defaultText, linkEnteredCallback);
 			}
             else {
-				ui.prompt(TEXT.modal.link.heading, TEXT.modal.link.dialog, TEXT.modal.link.default, linkEnteredCallback);
+				ui.prompt(TEXT.modal.link.heading, TEXT.modal.link.dialog, TEXT.modal.link.defaultText, linkEnteredCallback);
 			}
 			return true;
 		}

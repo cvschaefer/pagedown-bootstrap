@@ -256,8 +256,8 @@ else
 			// "paragraphs" that are wrapped in non-block-level tags, such as anchors,
 			// phrase emphasis, and spans. The list of tags we're looking for is
 			// hard-coded:
-			var block_tags_a = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del"
-			var block_tags_b = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math"
+			var block_tags_a = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del";
+			var block_tags_b = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math";
 
 			// First, look for nested blocks, e.g.:
 			//   <div>
@@ -1147,7 +1147,7 @@ else
 				else if (/\S/.test(str)) {
 					str = _RunSpanGamut(str);
 					str = str.replace(/^([ \t]*)/g, "<p>");
-					str += "</p>"
+					str += "</p>";
 					grafsOut.push(str);
 				}
 
@@ -1237,9 +1237,9 @@ else
 			*/
 
 			var email_replacer = function(wholematch, m1) {
-				var mailto = 'mailto:'
-				var link
-				var email
+				var mailto = 'mailto:';
+				var link;
+				var email;
 				if (m1.substring(0, mailto.length) != mailto){
 					link = mailto + m1;
 					email = m1;
@@ -1278,7 +1278,7 @@ else
 			text = text.replace(/^(\t|[ ]{1,4})/gm, "~0"); // attacklab: g_tab_width
 
 			// attacklab: clean up hack
-			text = text.replace(/~0/g, "")
+			text = text.replace(/~0/g, "");
 
 			return text;
 		}
