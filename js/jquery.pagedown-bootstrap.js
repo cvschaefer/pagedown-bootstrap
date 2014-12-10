@@ -27,14 +27,25 @@
 	$.fn.pagedownBootstrap = function( options ) {
 
 		// Default settings
-		var settings = $.extend( {
+		var settings = $.extend(true, {
 			'sanitize'				: true,
 			'help'						: null,
 			'hooks'						: Array(),
 			'converter_hooks'           : Array(),
 			'editor_hooks'              : Array(),
             'converter_auto_new_line'   : false,
-			'text':   {}
+            'preview_modal'             : false,
+			'text':   {
+                modal: {
+                    preview: {
+                        heading: "Preview",
+                        close: "Close"
+                    }
+                },
+                button: {
+                    preview: "Preview"
+                }
+            }
 		}, options);
 		settings.converter_hooks.concat(settings.hooks);
 
@@ -80,6 +91,27 @@
 			$(this).wrap('<div class="wmd-panel" />');
 			$(this).before('<div id="wmd-button-bar-'+idAppend+'" class="wmd-button-bar" />');
 			$(this).after('<div id="wmd-preview-'+idAppend+'" class="wmd-preview" />');
+            if (settings.preview_modal)
+            {
+                var previewModalId = 'wmd-preview-modal-'+idAppend;
+                var previewModalSelector = '#'+previewModalId;
+                $('#wmd-preview-'+idAppend)
+                    .wrap('<div class="modal fade" id="'+previewModalId+'" />')
+                    .wrap('<div class="modal-dialog" />')
+                    .wrap('<div class="modal-content" />')
+                    .wrap('<div class="modal-body" />')
+                    .closest('.modal-body')
+                    .before('<div class="modal-header"><button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" class="fa fa-close"></span><span class="sr-only">'+settings.text.modal.preview.close+'</span></button><h4 class="modal-title">'+settings.text.modal.preview.heading+'</h4></div>')
+                    .after('<div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">'+settings.text.modal.preview.close+'</button></div>');
+
+                if (settings.custom_preview_button_renderer) {
+                    settings.custom_preview_button_renderer($(this), previewModalSelector);
+                }
+                else {
+                    $(this).after('<button type="button" class="btn btn-default" data-toggle="modal" data-target="'+previewModalSelector+'">'+settings.text.button.preview+'</button>');
+                }
+            }
+
 			$(this).addClass('wmd-input');
 
 			//Setup help function

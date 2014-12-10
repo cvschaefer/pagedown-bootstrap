@@ -48,7 +48,7 @@
 					heading: "Insert Image",
 					dialog: "<code>http://example.com/images/diagram.jpg \"optional title\"</code>",
 					default: "http://"
-				},
+				}
 			},
 			button: {
 				ok: "Ok",
