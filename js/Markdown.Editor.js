@@ -39,13 +39,21 @@
 			modal: {
 				link: {
 					heading: "Insert Link",
-					dialog: "<code>http://example.com/ \"optional title\"</code>",
-					defaultText: "http://"
+                    urlInputLabel: "Link Address (e.g. \"http://www.example.com/\")",
+                    urlInputPlaceholder: "The actual link address",
+                    urlInputValue: "http://",
+                    titleInputLabel: "Optional Link Title (e.g. \"visit example.com\")",
+                    titleInputPlaceholder: "Text to show instead of the actual link address",
+                    titleInputValue: ""
 				},
 				image: {
 					heading: "Insert Image",
-					dialog: "<code>http://example.com/images/diagram.jpg \"optional title\"</code>",
-					defaultText: "http://"
+                    urlInputLabel: "Image Address (e.g. \"http://example.com/images/diagram.jpg\")",
+                    urlInputPlaceholder: "The actual image address",
+                    urlInputValue: "http://",
+                    titleInputLabel: "Optional Image Title (e.g. \"show diagram\")",
+                    titleInputPlaceholder: "Text to show instead of the actual Image address",
+                    titleInputValue: ""
 				}
 			},
 			button: {
@@ -1019,17 +1027,22 @@
 	// callback: The function which is executed when the prompt is dismissed, either via OK or Cancel.
 	//      It receives a single argument; either the entered text (if OK was chosen) or null (if Cancel
 	//      was chosen).
-	ui.prompt = function (title, text, defaultInputText, callback) {
+	ui.prompt = function (
+        title,
+        urlInputLabelText,
+        urlInputPlaceholderText,
+        urlInputValue,
+        titleInputLabelText,
+        titleInputPlaceholderText,
+        titleInputValue,
+        callback
+        ) {
 
 		// These variables need to be declared at this level since they are used
 		// in multiple functions.
 		var dialog;         // The dialog box.
-		var input;         // The text box where you enter the hyperlink.
-
-
-		if (defaultInputText === undefined) {
-			defaultInputText = "";
-		}
+		var urlInput;       // The text box where you enter the hyperlink.
+		var titleInput;     // The text box where you enter the link title.
 
 		// Used as a keydown event handler. Esc dismisses the prompt.
 		// Key code 27 is ESC.
@@ -1045,21 +1058,20 @@
 		// isCancel is false if we are going to keep the text.
 		var close = function (isCancel) {
 			util.removeEvent(doc.body, "keydown", checkEscape);
-			var text = input.value;
-
+			var urlText = urlInput.value;
+			var titleText = titleInput.value;
 			if (isCancel) {
-				text = null;
+				urlText = null;
 			}
 			else {
 				// Fixes common pasting errors.
-				text = text.replace(/^http:\/\/(https?|ftp):\/\//, '$1://');
-				if (!/^(?:https?|ftp):\/\//.test(text))
-					text = 'http://' + text;
+				urlText = urlText.replace(/^http:\/\/(https?|ftp):\/\//, '$1://');
+				if (!/^(?:https?|ftp):\/\//.test(urlText))
+					urlText = 'http://' + urlText;
 			}
-
 			$(dialog).modal('hide');
+			callback(urlText, titleText);
 
-			callback(text);
 			return false;
 		};
 
@@ -1111,12 +1123,6 @@
 			footer.className = "modal-footer";
 			content.appendChild(footer);
 
-			// The dialog text.
-			var question = doc.createElement("p");
-			question.innerHTML = text;
-			question.style.padding = "5px";
-			body.appendChild(question);
-
 			// The web form container for the text box and buttons.
 			var form = doc.createElement("form"),
 				style = form.style;
@@ -1125,16 +1131,38 @@
 			style.margin = "0";
 			body.appendChild(form);
 
-			// The input text box
-			input = doc.createElement("input");
-			input.type = "text";
-			input.value = defaultInputText;
-			input.className = "form-control";
-			style = input.style;
-			style.display = "block";
-			style.width = "80%";
-			style.marginLeft = style.marginRight = "auto";
-			form.appendChild(input);
+            var createTextInput = function (id, placeholderText, value) {
+                var input = doc.createElement("input");
+                input.type = "text";
+                input.id = id;
+                input.placeholder = placeholderText;
+                if (value) {
+                    input.value = value;
+                }
+                input.className = "form-control";
+
+                return input
+            }
+
+            var createFormGroup = function (labelText, input) {
+                var formGroup = doc.createElement("div");
+                formGroup.className = "form-group";
+                var label = doc.createElement("label");
+                label.for = input.id;
+                label.innerText = labelText;
+                formGroup.appendChild(label);
+                formGroup.appendChild(input);
+
+                return formGroup;
+            }
+
+            // The url input text box
+            urlInput = createTextInput("wmd-dialog-url-input", urlInputPlaceholderText, urlInputValue);
+            form.appendChild(createFormGroup(urlInputLabelText, urlInput));
+
+            // The titel input text box
+            titleInput = createTextInput("wmd-dialog-title-input", titleInputPlaceholderText, titleInputValue);
+            form.appendChild(createFormGroup(titleInputLabelText, titleInput));
 
 			// The ok button
 			var okButton = doc.createElement("button");
@@ -1165,13 +1193,13 @@
 
 			createDialog();
 
-			var defTextLen = defaultInputText.length;
-			if (input.selectionStart !== undefined) {
-				input.selectionStart = 0;
-				input.selectionEnd = defTextLen;
+			var defTextLen = urlInputPlaceholderText.length;
+			if (urlInput.selectionStart !== undefined) {
+				urlInput.selectionStart = 0;
+				urlInput.selectionEnd = defTextLen;
 			}
-			else if (input.createTextRange) {
-				var range = input.createTextRange();
+			else if (urlInput.createTextRange) {
+				var range = urlInput.createTextRange();
 				range.collapse(false);
 				range.moveStart("character", -defTextLen);
 				range.moveEnd("character", defTextLen);
@@ -1179,7 +1207,7 @@
 			}
 
 			$(dialog).on('shown', function () {
-				input.focus();
+				urlInput.focus();
 			})
 
 			$(dialog).on('hidden', function () {
@@ -1687,8 +1715,10 @@
 			var that = this;
 			// The function to be executed when you enter a link and press OK or Cancel.
 			// Marks up the link and adds the ref.
-			var linkEnteredCallback = function (link, descriptionText) {
-
+			var linkEnteredCallback = function (link, title) {
+                if (title !== null && title.length == 0) {
+                    title = null;
+                }
 				if (link !== null) {
 					// (                          $1
 					//     [^\\]                  anything that's not a backslash
@@ -1709,32 +1739,42 @@
 					// would mean a zero-width match at the start. Since zero-width matches advance the string position,
 					// the first bracket could then not act as the "not a backslash" for the second.
 					chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
-
 					var linkDef = " [999]: " + properlyEncoded(link);
-
 					var num = that.addLinkDef(chunk, linkDef);
 					chunk.startTag = isImage ? "![" : "[";
 					chunk.endTag = "][" + num + "]";
 
-					if (!chunk.selection) {
-						if (isImage) {
-								chunk.selection = TEXT.callback.description.image;
-						}
-						else {
-							chunk.selection = TEXT.callback.description.link;
-						}
-					}
+                    if (title) {
+                        chunk.selection = title;
+                    } else if (!chunk.selection) {
+                        chunk.selection = isImage ? TEXT.callback.description.image : TEXT.callback.description.link;
+                    }
 				}
 				postProcessing();
 			};
-
-
 			if (isImage) {
 				if (!this.hooks.insertImageDialog(linkEnteredCallback))
-					ui.prompt(TEXT.modal.image.heading, TEXT.modal.image.dialog, TEXT.modal.image.defaultText, linkEnteredCallback);
+					ui.prompt(
+                        TEXT.modal.image.heading,
+                        TEXT.modal.image.urlInputLabel,
+                        TEXT.modal.image.urlInputPlaceholder,
+                        TEXT.modal.image.urlInputValue,
+                        TEXT.modal.image.titleInputLabel,
+                        TEXT.modal.image.titleInputPlaceholder,
+                        chunk.selection ? chunk.selection : TEXT.modal.image.titleInputValue,
+                        linkEnteredCallback);
 			}
             else {
-				ui.prompt(TEXT.modal.link.heading, TEXT.modal.link.dialog, TEXT.modal.link.defaultText, linkEnteredCallback);
+				ui.prompt(
+                    TEXT.modal.link.heading,
+                    TEXT.modal.link.urlInputLabel,
+                    TEXT.modal.link.urlInputPlaceholder,
+                    TEXT.modal.link.urlInputValue,
+                    TEXT.modal.link.titleInputLabel,
+                    TEXT.modal.link.titleInputPlaceholder,
+                    chunk.selection ? chunk.selection : TEXT.modal.link.titleInputValue,
+                    linkEnteredCallback
+                );
 			}
 			return true;
 		}
