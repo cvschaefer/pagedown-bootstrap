@@ -88,7 +88,7 @@
 			$(this).attr('id', id+"-"+idAppend.toString());
 
 			//Wrap the element with the needed html
-			$(this).wrap('<div class="wmd-panel" />');
+			$(this).wrap('<div class="wmd-panel" id="wmd-panel-'+idAppend+'" />');
 			$(this).before('<div id="wmd-button-bar-'+idAppend+'" class="wmd-button-bar" />');
 			$(this).after('<div id="wmd-preview-'+idAppend+'" class="wmd-preview" />');
             if (settings.preview_modal)
