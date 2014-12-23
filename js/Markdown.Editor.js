@@ -1146,10 +1146,10 @@
 
             var createFormGroup = function (labelText, input) {
                 var formGroup = doc.createElement("div");
-                formGroup.className = "form-group";
+                formGroup['className'] = "form-group";
                 var label = doc.createElement("label");
-                label.for = input.id;
-                label.innerText = labelText;
+                label["for"] = input.id;
+                label["innerText"] = labelText;
                 formGroup.appendChild(label);
                 formGroup.appendChild(input);
 
