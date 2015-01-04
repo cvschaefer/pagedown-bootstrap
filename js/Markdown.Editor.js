@@ -1133,23 +1133,23 @@
 
             var createTextInput = function (id, placeholderText, value) {
                 var input = doc.createElement("input");
-                input.type = "text";
-                input.id = id;
-                input.placeholder = placeholderText;
+                input.setAttribute("type", "text");
+                input.setAttribute("id", id);
+                input.setAttribute("placeholder", placeholderText);
                 if (value) {
-                    input.value = value;
+                    input.setAttribute("value", value);
                 }
-                input.className = "form-control";
+                input.setAttribute("class", "form-control");
 
                 return input
             }
 
             var createFormGroup = function (labelText, input) {
                 var formGroup = doc.createElement("div");
-                formGroup['className'] = "form-group";
+                formGroup.setAttribute("class", "form-group");
                 var label = doc.createElement("label");
-                label["for"] = input.id;
-                label["innerText"] = labelText;
+                label.setAttribute("for", input.id);
+                label.innerHTML = labelText;
                 formGroup.appendChild(label);
                 formGroup.appendChild(input);
 
