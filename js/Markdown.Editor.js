@@ -144,6 +144,10 @@
 			uiManager = new UIManager(idPostfix, panels, undoManager, previewManager, commandManager, help);
 			uiManager.setUndoRedoButtonStates();
 
+            that.insertLink = function (link, title) {
+                uiManager.doInsertLink(link, title);
+            };
+
 			var forceRefresh = that.refreshPreview = function () { previewManager.refresh(true); };
 
 			forceRefresh();
@@ -1319,6 +1323,37 @@
 			});
 		}
 
+        function doInsertLink(link, title) {
+            inputBox.focus();
+            if (undoManager) {
+                undoManager.setCommandMode();
+            }
+
+            var state = new TextareaState(panels);
+
+            if (!state) {
+                return;
+            }
+
+            var chunks = state.getChunks();
+            if (chunks.selection.length > 0) {
+                title = null;
+            }
+
+            commandProto.doLinkOrImage(chunks, function(){}, false, link, title)
+
+            inputBox.focus();
+
+            if (chunks) {
+                state.setChunks(chunks);
+            }
+
+            state.restore();
+            previewManager.refresh();
+        }
+
+        this.doInsertLink = doInsertLink;
+
 
 		// Perform the button's action.
 		function doClick(button) {
@@ -1687,7 +1722,7 @@
 		});
 	}
 
-	commandProto.doLinkOrImage = function (chunk, postProcessing, isImage) {
+	commandProto.doLinkOrImage = function (chunk, postProcessing, isImage, link, title) {
 
 		chunk.trimWhitespace();
 		chunk.findTags(/\s*!?\[/, /\][ ]?(?:\n[ ]*)?(\[.*?\])?/);
@@ -1701,7 +1736,11 @@
 
 		}
 		else {
-
+            var insert = false;
+            if (!chunk.selection.length) {
+                // link is inserted
+                insert = true;
+            }
 			// We're moving start and end tag back into the selection, since (as we're in the else block) we're not
 			// *removing* a link, but *adding* one, so whatever findTags() found is now back to being part of the
 			// link text. linkEnteredCallback takes care of escaping any brackets.
@@ -1720,6 +1759,10 @@
                     title = null;
                 }
 				if (link !== null) {
+                    if (title) {
+                        chunk.selection = title;
+                    }
+
 					// (                          $1
 					//     [^\\]                  anything that's not a backslash
 					//     (?:\\\\)*              an even number (this includes zero) of backslashes
@@ -1744,38 +1787,51 @@
 					chunk.startTag = isImage ? "![" : "[";
 					chunk.endTag = "][" + num + "]";
 
-                    if (title) {
-                        chunk.selection = title;
-                    } else if (!chunk.selection) {
+                    if (!chunk.selection) {
                         chunk.selection = isImage ? TEXT.callback.description.image : TEXT.callback.description.link;
+                    }
+                    if (insert) {
+                        if (chunk.before.length > 0 && !/\s/.test(chunk.before.slice(-1))) {
+                            chunk.before += " ";
+                        }
+                        chunk.before += chunk.startTag + chunk.selection + chunk.endTag;
+                        chunk.selection = chunk.startTag = chunk.endTag = "";
+                        if (!/\s/.test(chunk.after.charAt(0))) {
+                            chunk.before += " ";
+                        }
                     }
 				}
 				postProcessing();
 			};
-			if (isImage) {
-				if (!this.hooks.insertImageDialog(linkEnteredCallback))
-					ui.prompt(
-                        TEXT.modal.image.heading,
-                        TEXT.modal.image.urlInputLabel,
-                        TEXT.modal.image.urlInputPlaceholder,
-                        TEXT.modal.image.urlInputValue,
-                        TEXT.modal.image.titleInputLabel,
-                        TEXT.modal.image.titleInputPlaceholder,
-                        chunk.selection ? chunk.selection : TEXT.modal.image.titleInputValue,
-                        linkEnteredCallback);
-			}
-            else {
-				ui.prompt(
-                    TEXT.modal.link.heading,
-                    TEXT.modal.link.urlInputLabel,
-                    TEXT.modal.link.urlInputPlaceholder,
-                    TEXT.modal.link.urlInputValue,
-                    TEXT.modal.link.titleInputLabel,
-                    TEXT.modal.link.titleInputPlaceholder,
-                    chunk.selection ? chunk.selection : TEXT.modal.link.titleInputValue,
-                    linkEnteredCallback
-                );
-			}
+            if (link && (title || chunk.selection.length > 0)) {
+                linkEnteredCallback(link, title);
+            } else {
+                if (isImage) {
+                    if (!this.hooks.insertImageDialog(linkEnteredCallback))
+                        ui.prompt(
+                            TEXT.modal.image.heading,
+                            TEXT.modal.image.urlInputLabel,
+                            TEXT.modal.image.urlInputPlaceholder,
+                            TEXT.modal.image.urlInputValue,
+                            TEXT.modal.image.titleInputLabel,
+                            TEXT.modal.image.titleInputPlaceholder,
+                            chunk.selection ? chunk.selection : TEXT.modal.image.titleInputValue,
+                            linkEnteredCallback);
+                }
+                else {
+                    ui.prompt(
+                        TEXT.modal.link.heading,
+                        TEXT.modal.link.urlInputLabel,
+                        TEXT.modal.link.urlInputPlaceholder,
+                        TEXT.modal.link.urlInputValue,
+                        TEXT.modal.link.titleInputLabel,
+                        TEXT.modal.link.titleInputPlaceholder,
+                        chunk.selection ? chunk.selection : TEXT.modal.link.titleInputValue,
+                        linkEnteredCallback
+                    );
+                }
+            }
+
 			return true;
 		}
 	};

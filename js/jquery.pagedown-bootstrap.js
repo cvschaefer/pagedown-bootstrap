@@ -141,7 +141,7 @@
 
 			}
             editor.run();
-
+            $(this).data('pageDown', editor);
 		});
 
 	};
